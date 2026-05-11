@@ -123,7 +123,7 @@ export default function CoverLetterGen() {
           <textarea
             style={{ ...styles.textarea, ...(cvOver ? styles.textareaError : {}) }}
             rows={8}
-            placeholder="e.g. CS graduate, dissertation on RF security and replay attacks, built hardware testbed with Arduino + LimeSDR, Python for signal analysis, looking for security/embedded roles..."
+            placeholder="Add your background/qualifications here..."
             value={cvText}
             onChange={(e) => setCvText(e.target.value)}
             maxLength={MAX_LENGTH + 100}
