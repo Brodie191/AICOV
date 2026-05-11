@@ -113,7 +113,7 @@ export default function CoverLetterGen() {
           <textarea
             style={styles.textarea}
             rows={8}
-            placeholder="Add your background/qualifications here"
+            placeholder="Add your background/qualifications here..."
             value={cvText}
             onChange={(e) => setCvText(e.target.value)}
           />
