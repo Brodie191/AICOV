@@ -1,3 +1,4 @@
+// Entry point — sets page metadata and renders the main component.
 import Head from "next/head";
 import CoverLetterGen from "../components/CoverLetterGen";
 

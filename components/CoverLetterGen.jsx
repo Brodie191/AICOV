@@ -1,5 +1,7 @@
+// Main UI component — handles all user input, calls the API, and renders the result.
 import { useState } from "react";
 
+// Must match MAX_INPUT_LENGTH in pages/api/generate.js.
 const MAX_LENGTH = 4000;
 
 export default function CoverLetterGen() {
@@ -8,9 +10,11 @@ export default function CoverLetterGen() {
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // Copied state resets after 2 seconds to give the user visual feedback.
   const [copied, setCopied] = useState(false);
 
   const generate = async () => {
+    // Client-side validation mirrors the server — catches obvious errors before a network round-trip.
     if (!cvText.trim() || !jobDescription.trim()) {
       setError("Fill in both fields first.");
       return;
@@ -51,24 +55,27 @@ export default function CoverLetterGen() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Used to show red borders and disable the button when the user exceeds the limit.
   const cvOver = cvText.length > MAX_LENGTH;
   const jobOver = jobDescription.length > MAX_LENGTH;
 
   return (
     <div style={styles.root}>
+      {/* Global styles and font imports — scoped here since there's no separate CSS file. */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap');
+        html, body { margin: 0; padding: 0; background: #1a1a1a; }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        ::selection { background: #c8ff00; color: #0a0a0a; }
+        ::selection { background: #f5f0e8; color: #1a1a1a; }
         textarea { resize: vertical; }
-        textarea:focus { outline: none; border-color: #c8ff00 !important; box-shadow: 0 0 0 3px rgba(200,255,0,0.1); }
+        textarea:focus { outline: none; border-color: #f5f0e8 !important; box-shadow: 0 0 0 3px rgba(200,255,0,0.1); }
         button:hover:not(:disabled) { filter: brightness(1.1); }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .spinner {
           width: 18px; height: 18px;
           border: 2px solid rgba(10,10,10,0.25);
-          border-top-color: #0a0a0a;
+          border-top-color: #1a1a1a;
           border-radius: 50%;
           animation: spin 0.7s linear infinite;
           display: inline-block;
@@ -83,6 +90,7 @@ export default function CoverLetterGen() {
           color: #888;
           margin-bottom: 8px;
           display: block;
+          text-align: center;
         }
         .char-count {
           font-family: 'DM Mono', monospace;
@@ -91,6 +99,7 @@ export default function CoverLetterGen() {
           margin-top: 6px;
           transition: color 0.2s;
         }
+        /* Stack inputs vertically on small screens. */
         @media (max-width: 600px) {
           .input-grid { grid-template-columns: 1fr !important; }
         }
@@ -107,7 +116,7 @@ export default function CoverLetterGen() {
         </p>
       </div>
 
-      {/* Inputs */}
+      {/* Input grid — switches to single column on mobile via .input-grid media query. */}
       <div className="input-grid" style={styles.grid}>
         <div style={styles.field}>
           <span className="label-tag">Your background / CV summary</span>
@@ -142,10 +151,10 @@ export default function CoverLetterGen() {
         </div>
       </div>
 
-      {/* Error */}
+      {/* Error message — only rendered when there is one. */}
       {error && <div style={styles.error} role="alert">{error}</div>}
 
-      {/* Generate button */}
+      {/* Generate button — disabled while loading or if either field is over the limit. */}
       <button
         style={{ ...styles.btn, ...(loading || cvOver || jobOver ? styles.btnDisabled : {}) }}
         onClick={generate}
@@ -161,7 +170,7 @@ export default function CoverLetterGen() {
         )}
       </button>
 
-      {/* Result */}
+      {/* Result — fades in when the API returns. aria-live announces it to screen readers. */}
       {result && (
         <div className="result-box" style={styles.resultWrap} aria-live="polite">
           <div style={styles.resultHeader}>
@@ -170,6 +179,7 @@ export default function CoverLetterGen() {
               {copied ? "✓ Copied" : "Copy"}
             </button>
           </div>
+          {/* Split on newlines so paragraphs render correctly from the plain-text API response. */}
           <div style={styles.resultText}>
             {result.split("\n").map((line, i) =>
               line.trim() ? <p key={i} style={{ marginBottom: 14 }}>{line}</p> : null
@@ -187,21 +197,22 @@ export default function CoverLetterGen() {
 const styles = {
   root: {
     minHeight: "100vh",
-    background: "#0a0a0a",
+    background: "#1a1a1a",
     color: "#f0f0f0",
-    fontFamily: "'Syne', sans-serif",
-    padding: "48px 24px",
-    maxWidth: 860,
+    fontFamily: "'Outfit', sans-serif",
+    // clamp() makes horizontal padding scale with viewport — no fixed max-width whitespace.
+    padding: "48px clamp(24px, 8vw, 120px)",
+    maxWidth: 1100,
     margin: "0 auto",
   },
-  header: { marginBottom: 48 },
+  header: { marginBottom: 48, textAlign: "center" },
   badge: {
     display: "inline-block",
     fontFamily: "'DM Mono', monospace",
     fontSize: 10,
     letterSpacing: "0.15em",
-    background: "#c8ff00",
-    color: "#0a0a0a",
+    background: "#f5f0e8",
+    color: "#1a1a1a",
     padding: "4px 10px",
     borderRadius: 2,
     marginBottom: 20,
@@ -220,6 +231,7 @@ const styles = {
     fontWeight: 400,
     maxWidth: 480,
     lineHeight: 1.6,
+    margin: "0 auto",
   },
   grid: {
     display: "grid",
@@ -244,12 +256,12 @@ const styles = {
     borderColor: "#ff4444",
   },
   btn: {
-    background: "#c8ff00",
-    color: "#0a0a0a",
+    background: "#f5f0e8",
+    color: "#1a1a1a",
     border: "none",
     borderRadius: 8,
     cursor: "pointer",
-    fontFamily: "'Syne', sans-serif",
+    fontFamily: "'Outfit', sans-serif",
     fontSize: 16,
     fontWeight: 700,
     padding: "16px 32px",
@@ -276,6 +288,8 @@ const styles = {
     borderRadius: 8,
     padding: "24px",
     marginBottom: 48,
+    // overflow: hidden clips text selection highlights at the box boundary.
+    overflow: "hidden",
   },
   resultHeader: {
     display: "flex",
@@ -301,6 +315,8 @@ const styles = {
     fontSize: 14,
     lineHeight: 1.8,
     color: "#d0d0d0",
+    // Prevents long unbroken words from overflowing the container.
+    overflowWrap: "break-word",
   },
   footer: {
     fontFamily: "'DM Mono', monospace",
